@@ -33,12 +33,15 @@ The plugin's `config.inc.php` is marked as a persistent file, so subsequent `com
 
 ### Option 2: Install manually
 
-1. Download the plugin from the [official repository](https://github.com/pushpasta/email_domains_mapper).
-2. Place it in your Roundcube installation at:
+1. Download the ZIP archive from the [latest release](https://github.com/pushpasta/email_domains_mapper/releases/latest).
+2. Extract it into your Roundcube `plugins/` directory. The archive already contains the correct folder name:
 
-   ```text
-   plugins/email_domains_mapper/
+   ```bash
+   cd /path/to/roundcubemail/plugins
+   unzip email_domains_mapper-<version>.zip
    ```
+
+   This creates `plugins/email_domains_mapper/`.
 
 **Do not mix installation methods.** Composer does not track a manually installed copy. If you switch to Composer later, remove the manually installed plugin folder before installing or updating the same plugin through Composer. Back up your configuration first.
 
