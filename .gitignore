@@ -12,6 +12,8 @@ composer.lock
 
 # phpunit (local overrides of phpunit.xml.dist)
 phpunit.xml
+.phpunit.result.cache
+.phpunit.cache/
 
 # os/editor noise
 Thumbs.db
