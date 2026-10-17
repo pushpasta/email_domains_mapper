@@ -8,6 +8,7 @@ local/config.inc.php
 # composer
 vendor/
 composer.phar
+composer.lock
 
 # os/editor noise
 Thumbs.db

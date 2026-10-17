@@ -3,3 +3,5 @@
 .github
 .gitignore
 AGENTS.md
+phpunit.xml.dist
+tests
