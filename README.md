@@ -1,5 +1,7 @@
 # Emails Domain Mapper
 
+[![CI](https://github.com/pushpasta/email_domains_mapper/actions/workflows/ci.yml/badge.svg)](https://github.com/pushpasta/email_domains_mapper/actions/workflows/ci.yml)
+
 **Connect users to the right mail servers based on their email domain.**
 
 `pushpasta/email_domains_mapper` is a Roundcube plugin for installations that serve multiple email domains. You configure which domains are allowed and which IMAP, SMTP, and optional ManageSieve servers each domain uses.
