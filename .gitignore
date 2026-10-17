@@ -10,6 +10,9 @@ vendor/
 composer.phar
 composer.lock
 
+# phpunit (local overrides of phpunit.xml.dist)
+phpunit.xml
+
 # os/editor noise
 Thumbs.db
 Desktop.ini
