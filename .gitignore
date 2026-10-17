@@ -1,0 +1,20 @@
+.tmp/
+AGENTS.md
+
+# local / secret config
+config.inc.php
+local/config.inc.php
+
+# composer
+vendor/
+composer.phar
+
+# os/editor noise
+Thumbs.db
+Desktop.ini
+.DS_Store
+*.swp
+*.bak
+*.orig
+.idea/
+.vscode/

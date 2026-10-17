@@ -1,0 +1,10 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: GitHub Discussions
+    url: https://github.com/pushpasta/email_domains_mapper/discussions
+    about: Ask questions, share ideas, or get community help
+
+  - name: Security vulnerabilities
+    url: https://github.com/pushpasta/email_domains_mapper/security/advisories/new
+    about: Please report security issues privately via GitHub Security Advisories

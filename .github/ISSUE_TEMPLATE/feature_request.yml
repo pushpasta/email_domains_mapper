@@ -1,0 +1,46 @@
+name: "Feature request"
+description: "Suggest a new feature or enhancement"
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an improvement! Please describe your idea clearly.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: "What problem does this solve? For whom?"
+      placeholder: "I'm frustrated when... because..."
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: "What would you like to happen?"
+      placeholder: "Add support for..."
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: "Any other approaches you've thought of?"
+    validations:
+      required: false
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: "Breaking changes, compatibility (Roundcube/PHP), security implications?"
+    validations:
+      required: false
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: "Links, examples, mockups, etc."
+    validations:
+      required: false

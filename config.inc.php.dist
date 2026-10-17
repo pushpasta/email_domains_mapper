@@ -1,0 +1,39 @@
+﻿<?php
+
+// Copy this file to config.inc.php (same folder) and adjust it.
+// The plugin loads config.inc.php only, never this .dist file.
+
+$config['email_domains_mapper'] = [
+    // Log verbosity threshold; higher levels include the lower ones.
+    // 0 = off, 1 = errors, 2 = warnings, 3 = info, 4 = debug.
+    'log_level' => 2,
+
+    // One entry per group of domains that share the same servers.
+    'mappings' => [
+        // Each server is given as scheme://host:port.
+        //   ssl:// = implicit TLS (IMAPS 993, SMTPS 465)
+        //   tls:// = STARTTLS (IMAP 143, SMTP 587, Sieve 4190)
+        // Only ssl:// and tls:// are accepted; plain text is rejected.
+        // 'domains' must be a non-empty array of domain strings; use a
+        // one-element array for a single domain.
+        // Domains are matched case-insensitively. IDN domains may be written in
+        // Unicode (café.es) or in punycode (xn--caf-dma.es); both are
+        // normalized to punycode.
+        [
+            // Several domains can share one set of servers.
+            'domains' => ['example.com', 'example.net', 'example.org'],
+            'imap' => 'ssl://imap.example.org:993',
+            'smtp' => 'tls://smtp.example.org:587',
+            // Optional. Omit it to disable ManageSieve for these domains.
+            'managesieve_host' => 'tls://sieve.example.org:4190',
+        ],
+
+        [
+            // A single domain is still given as a one-element array.
+            'domains' => ['example.co.uk'],
+            'imap' => 'ssl://imap.example.co.uk:993',
+            'smtp' => 'ssl://smtp.example.co.uk:465',
+            // No managesieve_host: ManageSieve stays disabled for this domain.
+        ],
+    ],
+];

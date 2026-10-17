@@ -1,0 +1,50 @@
+{
+  "name": "pushpasta/email_domains_mapper",
+  "type": "roundcube-plugin",
+  "description": "Roundcube plugin that selects IMAP, SMTP and optional ManageSieve hosts from defined mappings based on the domain of the user's full email login address. Rejects unknown domains before connecting and enables ManageSieve only for domains with a configured Sieve server.",
+  "license": "GPL-3.0-or-later",
+  "authors": [
+    {
+      "name": "CodeAlDente",
+      "email": "mail@codealdente.ovh",
+      "role": "Developer"
+    }
+  ],
+  "keywords": [
+    "domain-mapping",
+    "domain-routing",
+    "email",
+    "imap",
+    "mail-server",
+    "managesieve",
+    "multi-domain",
+    "plugin",
+    "roundcube",
+    "roundcube-plugin",
+    "server-selection",
+    "sieve",
+    "smtp",
+    "webmail"
+  ],
+  "support": {
+    "issues": "https://github.com/pushpasta/email_domains_mapper/issues",
+    "source": "https://github.com/pushpasta/email_domains_mapper"
+  },
+  "homepage": "https://github.com/pushpasta/email_domains_mapper",
+  "require": {
+    "php": ">=8.1.0",
+    "ext-intl": "*",
+    "ext-mbstring": "*",
+    "roundcube/plugin-installer": "~0.3.5"
+  },
+  "autoload": {
+    "classmap": [
+      "email_domains_mapper.php"
+    ]
+  },
+  "extra": {
+    "roundcube": {
+      "min-version": "1.7"
+    }
+  }
+}

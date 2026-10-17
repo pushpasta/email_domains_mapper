@@ -1,0 +1,110 @@
+name: "Bug report"
+description: "Report a bug or unexpected behavior"
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the details below.
+  - type: input
+    id: roundcube-version
+    attributes:
+      label: Roundcube version
+      description: "e.g. 1.7.x, 1.6.x"
+      placeholder: "1.7.x"
+    validations:
+      required: true
+  - type: input
+    id: php-version
+    attributes:
+      label: PHP version
+      placeholder: "8.2.x"
+    validations:
+      required: true
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin version
+      description: "e.g. 1.0.0"
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: installation
+    attributes:
+      label: Installation method
+      options:
+        - Composer
+        - Manual
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment details
+      description: "Web server, OS, browser, extensions (intl/mbstring), etc."
+      placeholder: |
+        OS: ...
+        Web server: Apache/Nginx/...
+        Browser: ...
+        PHP extensions: intl, mbstring
+    validations:
+      required: false
+  - type: textarea
+    id: config-summary
+    attributes:
+      label: Configuration summary
+      description: "Which domains, using tls:// or ssl://, ManageSieve yes/no (redact sensitive info)"
+      placeholder: |
+        Mapping example (redact hostnames/creds):
+        - domains: [example.org]
+          imap_host: tls://imap.example.org:143
+          smtp_host: tls://smtp.example.org:587
+          managesieve_host: tls://sieve.example.org:4190 (or omit)
+    validations:
+      required: false
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: "Clear, minimal steps"
+      placeholder: |
+        1. Go to login
+        2. Enter full email address user@example.org
+        3. Submit
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: "What should happen"
+      placeholder: "Should connect to configured IMAP/SMTP for the domain"
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: "What actually happens (include error messages)"
+      placeholder: "Error shown on login page / logs/email_domains_mapper.log content"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: "Relevant logs (redact sensitive info). Include logs/email_domains_mapper.log if available."
+      placeholder: |
+        From logs/email_domains_mapper.log:
+        [2026-...] ...
+    validations:
+      required: false
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: "Screenshots, relevant files, etc."
+    validations:
+      required: false
