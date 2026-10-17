@@ -1,0 +1,39 @@
+name: Packaging
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .distignore
+      - .gitattributes
+  pull_request:
+    paths:
+      - .distignore
+      - .gitattributes
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    name: Check distignore and gitattributes sync
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check .distignore and .gitattributes are in sync
+        run: |
+          set -euo pipefail
+          dist="$(grep -v '^[[:space:]]*#' .distignore | grep -v '^[[:space:]]*$' | sed 's|^/||' | sort -u)"
+          gita="$(grep -v '^[[:space:]]*#' .gitattributes | grep 'export-ignore' | cut -d' ' -f1 | sed 's|^/||' | sort -u)"
+          if [ "$dist" != "$gita" ]; then
+            echo "::error::.distignore and .gitattributes are out of sync"
+            echo "--- only in .distignore ---"
+            comm -23 <(echo "$dist") <(echo "$gita") || true
+            echo "--- only in .gitattributes ---"
+            comm -13 <(echo "$dist") <(echo "$gita") || true
+            exit 1
+          fi
+          echo "In sync ($(echo "$dist" | wc -l) entries)"
