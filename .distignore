@@ -1,3 +1,4 @@
+# Keep in sync with .gitattributes (export-ignore lines).
 .distignore
 .editorconfig
 .github
@@ -5,3 +6,5 @@
 AGENTS.md
 phpunit.xml.dist
 tests
+.gitattributes
+.tmp
