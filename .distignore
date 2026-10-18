@@ -1,6 +1,7 @@
 # Keep in sync with .gitattributes (export-ignore lines).
 .distignore
 .editorconfig
+.githooks
 .github
 .gitignore
 AGENTS.md

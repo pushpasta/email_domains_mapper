@@ -1,0 +1,24 @@
+#!/bin/sh
+
+msg_file="$1"
+line=$(head -n1 "$msg_file")
+
+if [ ${#line} -gt 60 ]; then
+  echo "commit-msg: title is ${#line} characters, maximum is 60" >&2
+  exit 1
+fi
+
+if ! printf '%s\n' "$line" | grep -Eq '^(feat|fix|docs|test|chore|ci|refactor|perf|build): [a-z][^ ].*'; then
+  echo "commit-msg: title must match '<type>: <summary>' with type one of:" >&2
+  echo "  feat fix docs test chore ci refactor perf build" >&2
+  echo "  summary starts lowercase, no scopes, no trailing period" >&2
+  echo "  got: $line" >&2
+  exit 1
+fi
+
+if printf '%s\n' "$line" | grep -Eq '\.$'; then
+  echo "commit-msg: title must not end with a period" >&2
+  exit 1
+fi
+
+exit 0

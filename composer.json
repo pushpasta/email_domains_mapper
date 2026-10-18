@@ -46,7 +46,14 @@
     ]
   },
   "scripts": {
-    "test": "phpunit"
+    "test": "phpunit",
+    "hooks:install": "git config core.hooksPath .githooks",
+    "post-install-cmd": [
+      "@hooks:install"
+    ],
+    "post-update-cmd": [
+      "@hooks:install"
+    ]
   },
   "config": {
     "allow-plugins": {

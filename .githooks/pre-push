@@ -1,0 +1,22 @@
+#!/bin/sh
+
+status=0
+
+for file in $(git ls-files -- '*.php'); do
+  case "$file" in
+    vendor/* | .tmp/*) continue ;;
+  esac
+  if ! php -l "$file"; then
+    status=1
+  fi
+done
+
+if ! php -l config.inc.php.dist; then
+  status=1
+fi
+
+if [ "$status" -ne 0 ]; then
+  echo "pre-push: php -l failed, fix syntax errors before pushing" >&2
+fi
+
+exit "$status"

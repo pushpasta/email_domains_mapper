@@ -1,0 +1,20 @@
+#!/bin/sh
+
+status=0
+
+for file in $(git diff --cached --name-only --diff-filter=ACM); do
+  case "$file" in
+    vendor/* | .tmp/*) continue ;;
+    *.php)
+      if ! php -l "$file"; then
+        status=1
+      fi
+      ;;
+  esac
+done
+
+if [ "$status" -ne 0 ]; then
+  echo "pre-commit: php -l failed, fix syntax errors before committing" >&2
+fi
+
+exit "$status"
