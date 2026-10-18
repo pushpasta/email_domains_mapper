@@ -1,20 +1,45 @@
 #!/bin/sh
+# Run syntax checks for staged PHP files.
 
-status=0
+files=$(git diff --cached --name-only --diff-filter=ACMR) || {
+    echo "pre-commit: could not read staged files" >&2
+    exit 1
+}
 
-for file in $(git diff --cached --name-only --diff-filter=ACM); do
-  case "$file" in
-    vendor/* | .tmp/*) continue ;;
-    *.php)
-      if ! php -l "$file"; then
-        status=1
-      fi
-      ;;
-  esac
-done
-
-if [ "$status" -ne 0 ]; then
-  echo "pre-commit: php -l failed, fix syntax errors before committing" >&2
+if [ -z "$files" ]; then
+    echo "pre-commit: no staged files to check"
+    exit 0
 fi
 
-exit "$status"
+if ! printf '%s\n' "$files" | grep -Eq '\.php(\.dist)?$'; then
+    echo "pre-commit: checks passed"
+    exit 0
+fi
+
+if ! command -v php >/dev/null 2>&1; then
+    echo "pre-commit: PHP files are staged, but php is not installed; skipping PHP syntax checks" >&2
+    exit 0
+fi
+
+echo "pre-commit: checking PHP syntax"
+printf '%s\n' "$files" | {
+    status=0
+    while IFS= read -r file; do
+        case "$file" in
+            vendor/*|.tmp/*) continue ;;
+            *.php|*.php.dist)
+                # Skip files removed from the working tree.
+                if [ -f "$file" ] && ! php -l "$file"; then
+                    status=1
+                fi
+                ;;
+        esac
+    done
+    exit "$status"
+} || {
+    echo "pre-commit: syntax checks failed; fix the errors before committing" >&2
+    exit 1
+}
+
+echo "pre-commit: checks passed"
+exit 0
