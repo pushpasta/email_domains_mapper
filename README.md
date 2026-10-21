@@ -277,6 +277,32 @@ Check that:
 
 A domain without `managesieve_host` intentionally has no Filters interface.
 
+## Development
+
+Clone the repository and install the dev dependencies:
+
+```bash
+composer install
+```
+
+This runs `composer hooks:install`, which points `core.hooksPath` at `.githooks/`. Run it manually if you already had the repository cloned:
+
+```bash
+composer hooks:install
+```
+
+The hooks run on every commit and push:
+
+- `pre-commit` — `php -l` on staged PHP files.
+- `pre-push` — `php -l` on all tracked PHP files and `config.inc.php.dist`.
+- `commit-msg` — checks the commit title format and length.
+
+Run the test suite with:
+
+```bash
+composer test
+```
+
 ## License
 
 GPL-3.0-or-later. See [LICENSE](LICENSE).
