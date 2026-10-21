@@ -1,17 +1,27 @@
 #!/bin/sh
 
+if ! command -v php >/dev/null 2>&1; then
+  echo "pre-push: php is not installed; skipping PHP syntax checks" >&2
+  exit 0
+fi
+
 status=0
 
-for file in $(git ls-files -- '*.php'); do
+files=$(git ls-files -- '*.php')
+
+while IFS= read -r file; do
+  [ -z "$file" ] && continue
   case "$file" in
     vendor/* | .tmp/*) continue ;;
   esac
-  if ! php -l "$file"; then
+  if [ -f "$file" ] && ! php -l "$file"; then
     status=1
   fi
-done
+done <<ENDOFFILES
+$files
+ENDOFFILES
 
-if ! php -l config.inc.php.dist; then
+if [ -f config.inc.php.dist ] && ! php -l config.inc.php.dist; then
   status=1
 fi
 
