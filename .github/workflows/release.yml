@@ -105,8 +105,22 @@ jobs:
             grep -qx 'email_domains_mapper/config.inc.php.dist' "$list"
             grep -qx 'email_domains_mapper/LICENSE' "$list"
             grep -qx 'email_domains_mapper/README.md' "$list"
-            if grep -E '^email_domains_mapper/(\.github/|tests/|\.tmp/|AGENTS\.md$|\.distignore$|\.gitattributes$|\.editorconfig$|\.gitignore$|phpunit\.xml|config\.inc\.php$)' "$list"; then
-              echo "Archive leaks excluded paths"
+            while IFS= read -r entry; do
+              case "$entry" in
+                ''|'#'*) continue ;;
+              esac
+              entry="${entry#/}"
+              while IFS= read -r path; do
+                case "$path" in
+                  email_domains_mapper/$entry|email_domains_mapper/$entry/*)
+                    echo "Archive leaks path excluded by .distignore: $entry"
+                    exit 1
+                    ;;
+                esac
+              done < "$list"
+            done < .distignore
+            if grep -qx 'email_domains_mapper/config.inc.php' "$list"; then
+              echo "Archive leaks config.inc.php"
               exit 1
             fi
           done
