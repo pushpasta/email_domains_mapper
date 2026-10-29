@@ -1,5 +1,4 @@
 .tmp/
-AGENTS.md
 
 # local / secret config
 config.inc.php
@@ -9,6 +8,7 @@ local/config.inc.php
 vendor/
 composer.phar
 composer.lock
+.php-cs-fixer.cache
 
 # phpunit (local overrides of phpunit.xml.dist)
 phpunit.xml
