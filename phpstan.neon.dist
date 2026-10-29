@@ -4,5 +4,5 @@ parameters:
     paths:
         - email_domains_mapper.php
     excludePaths:
-        - vendor
-        - .tmp
+        - vendor (?)
+        - .tmp (?)
