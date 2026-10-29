@@ -63,6 +63,9 @@ declare(strict_types=1);
  */
 class email_domains_mapper extends rcube_plugin
 {
+    /** Plugin version (single source of truth; also asserted by tests and release checks). */
+    public const VERSION = '1.0.0';
+
     /**
      * Plugin metadata shown by the Roundcube plugin manager / installer.
      *
@@ -73,7 +76,7 @@ class email_domains_mapper extends rcube_plugin
         return [
             'name' => 'email_domains_mapper',
             'vendor' => 'pushpasta',
-            'version' => '1.0.0',
+            'version' => self::VERSION,
             'license' => 'GPL-3.0-or-later',
             'uri' => 'https://github.com/pushpasta/email_domains_mapper',
             'src_uri' => 'https://github.com/pushpasta/email_domains_mapper',
@@ -454,14 +457,18 @@ class email_domains_mapper extends rcube_plugin
 
         if ($mapping !== null && $mapping['managesieve_host'] !== null) {
             $allowed_hosts = [$storage_host];
-            $this->log_once(self::LOG_DEBUG,
+            $this->log_once(
+                self::LOG_DEBUG,
                 'email_domains_mapper: ManageSieve enabled for domain "'
-                    . $this->sanitize_for_log($domain) . '"');
+                    . $this->sanitize_for_log($domain) . '"'
+            );
         } else {
             $allowed_hosts = ['email-domains-mapper-disabled.invalid'];
-            $this->log_once(self::LOG_DEBUG,
+            $this->log_once(
+                self::LOG_DEBUG,
                 'email_domains_mapper: ManageSieve disabled for domain "'
-                    . $this->session_domain_label() . '"');
+                    . $this->session_domain_label() . '"'
+            );
         }
 
         rcmail::get_instance()->config->set('managesieve_allowed_hosts', $allowed_hosts);
@@ -496,9 +503,11 @@ class email_domains_mapper extends rcube_plugin
             return $args;
         }
 
-        $this->log(self::LOG_DEBUG,
+        $this->log(
+            self::LOG_DEBUG,
             'email_domains_mapper: ManageSieve action blocked for domain "' . $this->session_domain_label()
-                . '"; no host configured');
+                . '"; no host configured'
+        );
 
         $task = (string) ($args['task'] ?? 'settings');
         if (!in_array($task, ['mail', 'settings', 'addressbook'], true)) {
@@ -530,7 +539,7 @@ class email_domains_mapper extends rcube_plugin
      */
     public function filter_managesieve_settings(array $args): array
     {
-        if ($this->domain_has_managesieve() || empty($args['actions']) || !is_array($args['actions'])) {
+        if ($this->domain_has_managesieve() || !isset($args['actions']) || !is_array($args['actions']) || $args['actions'] === []) {
             return $args;
         }
 
@@ -544,9 +553,11 @@ class email_domains_mapper extends rcube_plugin
         ));
 
         if (count($args['actions']) < $before) {
-            $this->log(self::LOG_DEBUG,
+            $this->log(
+                self::LOG_DEBUG,
                 'email_domains_mapper: hid ' . ($before - count($args['actions']))
-                    . ' ManageSieve settings entries');
+                    . ' ManageSieve settings entries'
+            );
         }
 
         return $args;
@@ -581,8 +592,10 @@ class email_domains_mapper extends rcube_plugin
 
         if (is_string($filtered)) {
             if ($filtered !== $args['content']) {
-                $this->log(self::LOG_DEBUG,
-                    'email_domains_mapper: hid "Create filter" message-menu item');
+                $this->log(
+                    self::LOG_DEBUG,
+                    'email_domains_mapper: hid "Create filter" message-menu item'
+                );
             }
             $args['content'] = $filtered;
         }

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use PHPUnit\Framework\Attributes\DataProvider;
 
 class LoggingTest extends PluginTestCase
 {
