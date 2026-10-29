@@ -23,15 +23,19 @@ jobs:
         id: version
         run: |
           set -euo pipefail
-          plugin_version="$(sed -n "s/.*'version'[[:space:]]*=>[[:space:]]*'\([^']*\)'.*/\1/p" email_domains_mapper.php | head -1)"
+          plugin_version="$(sed -n "s/.*const VERSION = '\([^']*\)'.*/\1/p" email_domains_mapper.php | head -1)"
           if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
-            echo "tagged=true" >> "$GITHUB_OUTPUT"
-            echo "tag=$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
-            echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+            {
+              echo "tagged=true"
+              echo "tag=$GITHUB_REF_NAME"
+              echo "version=${GITHUB_REF_NAME#v}"
+            } >> "$GITHUB_OUTPUT"
           else
-            echo "tagged=false" >> "$GITHUB_OUTPUT"
-            echo "tag=" >> "$GITHUB_OUTPUT"
-            echo "version=$plugin_version" >> "$GITHUB_OUTPUT"
+            {
+              echo "tagged=false"
+              echo "tag="
+              echo "version=$plugin_version"
+            } >> "$GITHUB_OUTPUT"
           fi
 
       - name: Verify tag matches plugin version
@@ -40,9 +44,20 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           set -euo pipefail
-          plugin_version="$(sed -n "s/.*'version'[[:space:]]*=>[[:space:]]*'\([^']*\)'.*/\1/p" email_domains_mapper.php | head -1)"
+          plugin_version="$(sed -n "s/.*const VERSION = '\([^']*\)'.*/\1/p" email_domains_mapper.php | head -1)"
           if [[ "$plugin_version" != "$VERSION" ]]; then
             echo "Tag v$VERSION does not match plugin version $plugin_version"
+            exit 1
+          fi
+
+      - name: Verify changelog entry
+        if: steps.version.outputs.tagged == 'true'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          if ! grep -Eq "^## \[$VERSION\]" CHANGELOG.md; then
+            echo "CHANGELOG.md has no section for version $VERSION"
             exit 1
           fi
 
@@ -105,6 +120,7 @@ jobs:
             grep -qx 'email_domains_mapper/config.inc.php.dist' "$list"
             grep -qx 'email_domains_mapper/LICENSE' "$list"
             grep -qx 'email_domains_mapper/README.md' "$list"
+            grep -qx 'email_domains_mapper/CHANGELOG.md' "$list"
             while IFS= read -r entry; do
               case "$entry" in
                 ''|'#'*) continue ;;
@@ -112,7 +128,7 @@ jobs:
               entry="${entry#/}"
               while IFS= read -r path; do
                 case "$path" in
-                  email_domains_mapper/$entry|email_domains_mapper/$entry/*)
+                  "email_domains_mapper/$entry"|"email_domains_mapper/$entry"/*)
                     echo "Archive leaks path excluded by .distignore: $entry"
                     exit 1
                     ;;
@@ -132,35 +148,27 @@ jobs:
           name: release-${{ steps.version.outputs.version }}
           path: dist/*
 
+      - name: Build release notes
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: bash .github/scripts/build-release-notes.sh "$VERSION" dist/release-notes.md
+
+      - name: Build checksums
+        run: |
+          set -euo pipefail
+          cd dist
+          sha256sum email_domains_mapper-*.zip roundcube-email_domains_mapper-*.tar.gz > checksums.txt
+          cd ..
+
       - name: Create GitHub release
         if: steps.version.outputs.tagged == 'true'
         uses: softprops/action-gh-release@v3
         with:
           name: ${{ steps.version.outputs.tag }}
-          generate_release_notes: true
           fail_on_unmatched_files: true
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          body_path: dist/release-notes.md
           files: |
             dist/email_domains_mapper-${{ steps.version.outputs.version }}.zip
             dist/roundcube-email_domains_mapper-${{ steps.version.outputs.version }}.tar.gz
-          body: |
-            ## Install manually
-
-            Extract into the Roundcube `plugins/` directory:
-
-            ```bash
-            cd /path/to/roundcubemail/plugins
-            unzip email_domains_mapper-${{ steps.version.outputs.version }}.zip
-            # or: tar -xzf roundcube-email_domains_mapper-${{ steps.version.outputs.version }}.tar.gz
-            ```
-
-            Then copy `plugins/email_domains_mapper/config.inc.php.dist` to
-            `config.inc.php`, edit your domain mappings, and enable
-            `email_domains_mapper` before `managesieve` in `$config['plugins']`.
-            See the [README](https://github.com/pushpasta/email_domains_mapper#configuration)
-            for details.
-
-            ## Install with Composer
-
-            ```bash
-            composer require pushpasta/email_domains_mapper:${{ steps.version.outputs.version }}
-            ```
+            dist/checksums.txt

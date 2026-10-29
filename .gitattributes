@@ -1,3 +1,6 @@
+# Normalize line endings to LF for all text files (matches .editorconfig).
+* text=auto eol=lf
+
 # Keep in sync with .distignore.
 # Shell hooks must keep LF endings (core.autocrlf would break sh).
 /.githooks/* text eol=lf
@@ -11,5 +14,7 @@
 /.gitignore export-ignore
 /.tmp export-ignore
 /AGENTS.md export-ignore
+/.php-cs-fixer.dist.php export-ignore
+/phpstan.neon.dist export-ignore
 /phpunit.xml.dist export-ignore
 /tests export-ignore

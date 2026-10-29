@@ -5,6 +5,8 @@
 .github
 .gitignore
 AGENTS.md
+.php-cs-fixer.dist.php
+phpstan.neon.dist
 phpunit.xml.dist
 tests
 .gitattributes

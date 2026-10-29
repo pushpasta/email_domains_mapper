@@ -38,7 +38,13 @@
     "roundcube/plugin-installer": "~0.3.5"
   },
   "require-dev": {
+    "ergebnis/composer-normalize": "^2.13",
+    "friendsofphp/php-cs-fixer": "^3.8",
+    "phpstan/extension-installer": "^1.1",
+    "phpstan/phpstan": "~2.2.0",
+    "phpstan/phpstan-strict-rules": "^2.0",
     "phpunit/phpunit": "^10.5 || ^11.5 || ^12.0",
+    "roundcube/roundcubemail": "^1.7",
     "symfony/yaml": "^6.4 || ^7.0"
   },
   "autoload": {
@@ -48,6 +54,15 @@
   },
   "scripts": {
     "test": "phpunit",
+    "cs": "php-cs-fixer fix --dry-run --diff --using-cache=no",
+    "cs:fix": "php-cs-fixer fix",
+    "phpstan": "phpstan analyse --no-progress",
+    "check": [
+      "@cs",
+      "@phpstan",
+      "@test"
+    ],
+    "lint:composer": "@composer validate --strict --no-check-lock",
     "hooks:install": "git config core.hooksPath .githooks",
     "post-install-cmd": [
       "@hooks:install"
@@ -58,6 +73,7 @@
   },
   "config": {
     "allow-plugins": {
+      "phpstan/extension-installer": true,
       "roundcube/plugin-installer": true
     }
   },
