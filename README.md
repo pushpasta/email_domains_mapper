@@ -17,11 +17,7 @@ Users sign in with their full email address, such as `user@example.com`. The plu
 
 ## Installation
 
-Choose **Composer** or **manual installation**, then complete the configuration steps below.
-
-### Option 1: Install with Composer
-
-From your Roundcube installation directory, run:
+Install with Composer from your Roundcube installation directory:
 
 ```bash
 composer require pushpasta/email_domains_mapper
@@ -30,20 +26,6 @@ composer require pushpasta/email_domains_mapper
 Composer installs the plugin under `plugins/`. If prompted to enable it, answer **yes**.
 
 The plugin's `config.inc.php` is marked as a persistent file, so subsequent `composer update` runs preserve your configuration.
-
-### Option 2: Install manually
-
-1. Download the ZIP archive from the [latest release](https://github.com/pushpasta/email_domains_mapper/releases/latest).
-2. Extract it into your Roundcube `plugins/` directory. The archive already contains the correct folder name:
-
-   ```bash
-   cd /path/to/roundcubemail/plugins
-   unzip email_domains_mapper-<version>.zip
-   ```
-
-   This creates `plugins/email_domains_mapper/`.
-
-**Do not mix installation methods.** Composer does not track a manually installed copy. If you switch to Composer later, remove the manually installed plugin folder before installing or updating the same plugin through Composer. Back up your configuration first.
 
 ## Configuration
 

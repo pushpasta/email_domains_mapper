@@ -30,15 +30,6 @@ body:
       placeholder: "1.0.0"
     validations:
       required: true
-  - type: dropdown
-    id: installation
-    attributes:
-      label: Installation method
-      options:
-        - Composer
-        - Manual
-    validations:
-      required: true
   - type: textarea
     id: environment
     attributes:

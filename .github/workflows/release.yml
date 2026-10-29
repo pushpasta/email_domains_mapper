@@ -127,78 +127,10 @@ jobs:
       - name: Run tests
         run: composer test
 
-      - name: Build archives
-        env:
-          VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          set -euo pipefail
-          src="$(mktemp -d)"
-          stage="$(mktemp -d)"
-          git archive --format=tar HEAD | tar -x -C "$src"
-          mkdir -p "$stage/email_domains_mapper"
-          rsync -a --exclude-from=.distignore "$src/" "$stage/email_domains_mapper/"
-          mkdir -p dist
-          (cd "$stage" && zip -qr "$GITHUB_WORKSPACE/dist/email_domains_mapper-$VERSION.zip" email_domains_mapper)
-          tar -C "$stage" -czf "dist/roundcube-email_domains_mapper-$VERSION.tar.gz" email_domains_mapper
-
-      - name: Verify archive contents
-        env:
-          VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          set -euo pipefail
-          ziplist="$(mktemp)"
-          tarlist="$(mktemp)"
-          unzip -Z1 "dist/email_domains_mapper-$VERSION.zip" | sort > "$ziplist"
-          tar -tzf "dist/roundcube-email_domains_mapper-$VERSION.tar.gz" | sort > "$tarlist"
-
-          for list in "$ziplist" "$tarlist"; do
-            echo "=== $(basename "$list") ==="
-            cat "$list"
-            echo
-            grep -qx 'email_domains_mapper/email_domains_mapper.php' "$list"
-            grep -qx 'email_domains_mapper/composer.json' "$list"
-            grep -qx 'email_domains_mapper/config.inc.php.dist' "$list"
-            grep -qx 'email_domains_mapper/LICENSE' "$list"
-            grep -qx 'email_domains_mapper/README.md' "$list"
-            grep -qx 'email_domains_mapper/CHANGELOG.md' "$list"
-            while IFS= read -r entry; do
-              case "$entry" in
-                ''|'#'*) continue ;;
-              esac
-              entry="${entry#/}"
-              while IFS= read -r path; do
-                case "$path" in
-                  "email_domains_mapper/$entry"|"email_domains_mapper/$entry"/*)
-                    echo "Archive leaks path excluded by .distignore: $entry"
-                    exit 1
-                    ;;
-                esac
-              done < "$list"
-            done < .distignore
-            if grep -qx 'email_domains_mapper/config.inc.php' "$list"; then
-              echo "Archive leaks config.inc.php"
-              exit 1
-            fi
-          done
-
-      - name: Upload build artifacts (dry run)
-        if: steps.version.outputs.tagged != 'true'
-        uses: actions/upload-artifact@v7
-        with:
-          name: release-${{ steps.version.outputs.version }}
-          path: dist/*
-
       - name: Build release notes
         env:
           VERSION: ${{ steps.version.outputs.version }}
         run: bash .github/scripts/build-release-notes.sh "$VERSION" dist/release-notes.md
-
-      - name: Build checksums
-        run: |
-          set -euo pipefail
-          cd dist
-          sha256sum email_domains_mapper-*.zip roundcube-email_domains_mapper-*.tar.gz > checksums.txt
-          cd ..
 
       - name: Create GitHub release
         if: steps.version.outputs.tagged == 'true'
@@ -207,10 +139,5 @@ jobs:
           name: ${{ steps.version.outputs.tag }}
           tag_name: ${{ steps.version.outputs.tag }}
           target_commitish: ${{ github.sha }}
-          fail_on_unmatched_files: true
           prerelease: ${{ (contains(steps.version.outputs.tag, '-')) || (inputs.prerelease == true) }}
           body_path: dist/release-notes.md
-          files: |
-            dist/email_domains_mapper-${{ steps.version.outputs.version }}.zip
-            dist/roundcube-email_domains_mapper-${{ steps.version.outputs.version }}.tar.gz
-            dist/checksums.txt

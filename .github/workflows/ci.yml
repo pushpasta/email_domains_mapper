@@ -103,43 +103,6 @@ jobs:
       - name: Run actionlint
         run: docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:latest -color
 
-  build:
-    name: Build package
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Build archive
-        run: |
-          set -euo pipefail
-          src="$(mktemp -d)"
-          stage="$(mktemp -d)"
-          git archive --format=tar HEAD | tar -x -C "$src"
-          mkdir -p "$stage/email_domains_mapper"
-          rsync -a --exclude-from=.distignore "$src/" "$stage/email_domains_mapper/"
-          mkdir -p dist
-          (cd "$stage" && zip -qr "$GITHUB_WORKSPACE/dist/email_domains_mapper.zip" email_domains_mapper)
-          tar -C "$stage" -czf "$GITHUB_WORKSPACE/dist/roundcube-email_domains_mapper.tar.gz" email_domains_mapper
-
-      - name: Verify archive contents
-        run: |
-          set -euo pipefail
-          unzip -Z1 dist/email_domains_mapper.zip | sort > /tmp/ziplist
-          tar -tzf dist/roundcube-email_domains_mapper.tar.gz | sort > /tmp/tarlist
-          for list in /tmp/ziplist /tmp/tarlist; do
-            grep -qx 'email_domains_mapper/email_domains_mapper.php' "$list"
-            grep -qx 'email_domains_mapper/composer.json' "$list"
-            grep -qx 'email_domains_mapper/config.inc.php.dist' "$list"
-            grep -qx 'email_domains_mapper/LICENSE' "$list"
-            grep -qx 'email_domains_mapper/README.md' "$list"
-            grep -qx 'email_domains_mapper/CHANGELOG.md' "$list"
-            if grep -qx 'email_domains_mapper/config.inc.php' "$list"; then
-              echo "Archive leaks config.inc.php"
-              exit 1
-            fi
-          done
-
   tests:
     name: Tests (PHP ${{ matrix.php }})
     runs-on: ubuntu-latest
