@@ -1,6 +1,10 @@
 # Emails Domain Mapper
 
 [![CI](https://github.com/pushpasta/email_domains_mapper/actions/workflows/ci.yml/badge.svg)](https://github.com/pushpasta/email_domains_mapper/actions/workflows/ci.yml)
+[![Latest Release](https://img.shields.io/github/v/release/pushpasta/email_domains_mapper.svg)](https://github.com/pushpasta/email_domains_mapper/releases/latest)
+[![Installs](https://img.shields.io/packagist/dt/pushpasta/email_domains_mapper.svg?label=Installs)](https://packagist.org/packages/pushpasta/email_domains_mapper)
+[![Downloads](https://img.shields.io/github/downloads/pushpasta/email_domains_mapper/total.svg)](https://github.com/pushpasta/email_domains_mapper/releases)
+[![License](https://img.shields.io/github/license/pushpasta/email_domains_mapper.svg)](https://github.com/pushpasta/email_domains_mapper/blob/main/LICENSE)
 
 **Connect users to the right mail servers based on their email domain.**
 
