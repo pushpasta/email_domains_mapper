@@ -51,9 +51,11 @@ Each mapping contains:
 
 All domains in the same mapping use the same servers. To use different servers for different domains, create separate mappings.
 
-> **Important:** Only `config.inc.php` is loaded. Editing `config.inc.php.dist` alone does not configure the plugin.
+> [!IMPORTANT]
+> Only `config.inc.php` is loaded. Editing `config.inc.php.dist` alone does not configure the plugin.
 
-> **Tip:** You can also generate a ready-to-use `config.inc.php` online at <https://pushpasta.github.io/email_domains_mapper/#config> (runs entirely in your browser, nothing is uploaded).
+> [!TIP]
+> You can also generate a ready-to-use `config.inc.php` online at <https://pushpasta.github.io/email_domains_mapper/#config> (runs entirely in your browser, nothing is uploaded).
 
 ### 2. Enable the plugin
 
