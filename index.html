@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Email Domains Mapper - Roundcube plugin</title>
+  <meta name="description" content="Roundcube plugin that selects IMAP, SMTP and ManageSieve hosts from domain mappings.">
+
+  <!-- Bootstrap Icons: lightweight icon font used for feature items and buttons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <!-- Our own styles (variables, layout, theming) -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===== Header ===== -->
+  <header>
+    <!-- Theme toggle: cycles Auto -> Light -> Dark, persists in localStorage -->
+    <button class="theme-switch" id="themeSwitch" aria-label="Toggle theme">Auto</button>
+    <h1>Email Domains Mapper</h1>
+    <p>Connect users to the right mail servers based on their email domain.</p>
+
+    <!-- Auto-updating shields from Packagist / GitHub -->
+    <div class="badges">
+      <a href="https://github.com/pushpasta/email_domains_mapper/actions/workflows/ci.yml"><img src="https://github.com/pushpasta/email_domains_mapper/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+      <a href="https://github.com/pushpasta/email_domains_mapper/releases/latest"><img src="https://img.shields.io/github/v/release/pushpasta/email_domains_mapper.svg" alt="Latest Release"></a>
+      <a href="https://packagist.org/packages/pushpasta/email_domains_mapper"><img src="https://img.shields.io/packagist/dt/pushpasta/email_domains_mapper.svg?label=Installs" alt="Installs"></a>
+      <a href="https://github.com/pushpasta/email_domains_mapper/releases"><img src="https://img.shields.io/github/downloads/pushpasta/email_domains_mapper/total.svg" alt="Downloads"></a>
+      <a href="https://github.com/pushpasta/email_domains_mapper/blob/main/LICENSE"><img src="https://img.shields.io/github/license/pushpasta/email_domains_mapper.svg" alt="License"></a>
+    </div>
+
+    <nav>
+      <a href="#features">Features</a>
+      <a href="#requirements">Requirements</a>
+      <a href="#install">Install</a>
+      <a href="#config">Config generator</a>
+      <a href="https://github.com/pushpasta/email_domains_mapper/blob/main/CHANGELOG.md">Changelog</a>
+    </nav>
+  </header>
+
+  <!-- ===== Features ===== -->
+  <section id="features">
+    <h2>What it does</h2>
+    <p>For Roundcube installations serving multiple email domains. You configure which domains are allowed and which IMAP, SMTP and optional ManageSieve servers each domain uses. Users sign in with their full email address; the plugin looks up the domain and selects the configured servers. Unknown or malformed domains are rejected before any connection is made.</p>
+    <div class="features">
+      <div class="feature"><i class="bi bi-shield-lock"></i><span>Explicit domain allowlist (fail-closed)</span></div>
+      <div class="feature"><i class="bi bi-hdd-network"></i><span>IMAP + SMTP host selection per domain</span></div>
+      <div class="feature"><i class="bi bi-funnel"></i><span>Optional per-domain ManageSieve</span></div>
+      <div class="feature"><i class="bi bi-eye-slash"></i><span>ManageSieve UI/endpoint gating</span></div>
+      <div class="feature"><i class="bi bi-globe2"></i><span>IDN (Unicode/punycode) support</span></div>
+      <div class="feature"><i class="bi bi-type"></i><span>Case-insensitive domain matching</span></div>
+      <div class="feature"><i class="bi bi-lock-fill"></i><span>TLS-only server URLs (ssl://, tls://)</span></div>
+      <div class="feature"><i class="bi bi-journal-text"></i><span>Configurable logging with sanitization</span></div>
+    </div>
+  </section>
+
+  <!-- ===== Requirements ===== -->
+  <section id="requirements">
+    <h2>Requirements</h2>
+    <ul>
+      <li>Roundcube 1.7 or newer</li>
+      <li>PHP 8.1 or newer</li>
+      <li><code>intl</code> and <code>mbstring</code> PHP extensions</li>
+      <li>Mail server URLs using <code>tls://</code> or <code>ssl://</code></li>
+    </ul>
+  </section>
+
+  <!-- ===== Installation ===== -->
+  <section id="install">
+    <h2>Installation</h2>
+    <div class="card">
+      <p>From your Roundcube installation directory:</p>
+      <pre><code>composer require pushpasta/email_domains_mapper</code></pre>
+      <p class="note">Composer installs under <code>plugins/</code>. If prompted to enable the plugin, answer yes. <code>config.inc.php</code> is preserved across updates.</p>
+    </div>
+    <p class="note">Then complete the <a href="#config">configuration</a> below.</p>
+  </section>
+
+  <!-- ===== Configuration generator ===== -->
+  <section id="config">
+    <h2>Configuration generator</h2>
+    <p>Build a ready-to-use <code>config.inc.php</code> for the plugin. If you already have a config, paste it below to load and edit it (use the file from the plugin's directory, <code>plugins/email_domains_mapper/config.inc.php</code> - <strong>not</strong> Roundcube's main config). Otherwise start from scratch by adding mappings. When done, click <strong>Generate</strong> and copy the result into <code>plugins/email_domains_mapper/config.inc.php</code>.</p>
+    <p><strong>Nothing is stored, uploaded or saved - everything happens in your browser only.</strong></p>
+
+    <h3>Step 1 - Import existing config (optional)</h3>
+    <div class="card">
+      <div class="field">
+        <label for="paste">Paste your current <code>config.inc.php</code> or the <code>$config['email_domains_mapper']</code> array</label>
+        <textarea id="paste" rows="6" placeholder="Paste PHP or JSON config here..."></textarea>
+      </div>
+      <div class="actions">
+        <button class="btn" id="loadPasted" disabled><i class="bi bi-upload"></i> Load into form</button>
+        <span class="note" id="loadStatus"></span>
+      </div>
+    </div>
+
+    <h3>Step 2 - Log level &amp; mappings</h3>
+    <div class="card">
+      <div class="field">
+        <label for="loglevel">Log level (0=off, 1=errors, 2=warnings, 3=info, 4=debug)</label>
+        <select id="loglevel">
+          <option value="0">0 - off</option>
+          <option value="1">1 - errors</option>
+          <option value="2" selected>2 - warnings (default)</option>
+          <option value="3">3 - info</option>
+          <option value="4">4 - debug</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="mappings"></div>
+    <div class="actions">
+      <button class="btn" id="addMapping"><i class="bi bi-plus-lg"></i> Add mapping</button>
+      <button class="btn" id="loadExample"><i class="bi bi-magic"></i> Load example</button>
+    </div>
+
+    <h3>Step 3 - Result</h3>
+    <div class="actions">
+      <button class="btn primary" id="generate"><i class="bi bi-gear"></i> Generate config</button>
+      <button class="btn" id="copy"><i class="bi bi-clipboard"></i> Copy to clipboard</button>
+      <button class="btn danger" id="reset"><i class="bi bi-arrow-counterclockwise"></i> Start over</button>
+    </div>
+    <div class="card">
+      <pre><code id="output" class="is-placeholder">// Click "Generate config" to produce config.inc.php contents.</code></pre>
+      <p class="note warn" id="warning" hidden></p>
+    </div>
+
+    <p class="note">Save the file as <code>config.inc.php</code>, then see the <a href="https://github.com/pushpasta/email_domains_mapper#configuration">README configuration section</a> for enabling the plugin and login form settings.</p>
+  </section>
+
+  <!-- ===== Footer ===== -->
+  <footer id="footer">
+    <span class="copy">Hosted with <i class="bi bi-heart-fill heart"></i> by <a href="https://docs.github.com/en/pages" target="_blank" rel="noopener noreferrer">GitHub</a></span>
+    <span class="links">
+      <a href="https://github.com/pushpasta/email_domains_mapper" target="_blank" rel="noopener noreferrer"><img src="https://icons.duckduckgo.com/ip3/github.com.ico" alt="">GitHub</a>
+      <a href="https://packagist.org/packages/pushpasta/email_domains_mapper" target="_blank" rel="noopener noreferrer"><img src="https://icons.duckduckgo.com/ip3/packagist.org.ico" alt="">Packagist</a>
+      <a href="https://www.buymeacoffee.com/codealdente" target="_blank" rel="noopener noreferrer"><img src="https://icons.duckduckgo.com/ip3/buymeacoffee.com.ico" alt="">Buy me a coffee</a>
+    </span>
+  </footer>
+  <!-- Back to top button: hidden until the user scrolls down -->
+<button class="to-top" id="toTop" aria-label="Back to top">&#8593;</button>
+</div>
+
+<!-- All interactive behavior lives in script.js -->
+<script src="script.js" defer></script>
+</body>
+</html>
