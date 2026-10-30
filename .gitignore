@@ -1,0 +1,6 @@
+# Ignore everything except the published site files
+*
+!index.html
+!style.css
+!script.js
+!.gitignore
