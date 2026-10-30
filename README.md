@@ -53,6 +53,8 @@ All domains in the same mapping use the same servers. To use different servers f
 
 > **Important:** Only `config.inc.php` is loaded. Editing `config.inc.php.dist` alone does not configure the plugin.
 
+> **Tip:** You can also generate a ready-to-use `config.inc.php` online at <https://pushpasta.github.io/email_domains_mapper/#config> (runs entirely in your browser, nothing is uploaded).
+
 ### 2. Enable the plugin
 
 In Roundcube's main `config/config.inc.php`, add `email_domains_mapper` to your existing plugin list.
