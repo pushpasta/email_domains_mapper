@@ -380,6 +380,11 @@ document.getElementById('loadPasted').addEventListener('click', () => {
     status.className = 'note warn';
     return;
   }
+  const hasCurrentEntries = [...mappingsEl.querySelectorAll('.mapping')].some(mapping =>
+    ['domains', 'imapHost', 'imapPort', 'smtpHost', 'smtpPort', 'sieveHost', 'sievePort']
+      .some(field => mapping.querySelector(`[data-field="${field}"]`).value.trim())
+  );
+  if (hasCurrentEntries && !window.confirm('Loading this config will replace the mapping values currently in the form. Continue?')) return;
   if (parsed.logLevel != null) document.getElementById('loglevel').value = parsed.logLevel;
   mappingsEl.innerHTML = '';
   mappingCount = 0;
