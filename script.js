@@ -407,12 +407,11 @@ document.getElementById('reset').addEventListener('click', () => {
 });
 
 mappingsEl.addEventListener('click', (e) => {
-  if (e.target.dataset.remove) {
-    const btn = e.target.closest('button');
-    if (btn && btn.disabled) return;   // guard: never remove the last mapping
-    e.target.closest('.mapping').remove();
-    refreshRemoveButtons();
-  }
+  const btn = e.target.closest('[data-remove]');
+  if (!btn || btn.disabled) return;
+  const mapping = btn.closest('.mapping');
+  if (mapping) mapping.remove();
+  refreshRemoveButtons();
 });
 
 document.getElementById('copy').addEventListener('click', () => {
