@@ -50,12 +50,16 @@ applyTheme();
 // Escape a value for use inside a single-quoted PHP string.
 function esc(s) { return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'"); }
 
+function htmlEsc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 // Split a full host URL like "ssl://imap.example.org:993" into its parts.
 function splitHost(v) {
-  v = (v || '').trim();
-  const m = v.match(/^(ssl|tls):\/\/([^:]+):(\d+)$/);
-  if (m) return { proto: m[1] + '://', host: m[2], port: m[3] };
-  return { proto: 'ssl://', host: v, port: '' };
+  if (typeof v !== 'string') return { proto: 'ssl://', host: '', port: '' };
+  const m = v.trim().match(/^(ssl|tls):\/\/((?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)*[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?):([0-9]{1,5})$/);
+  if (!m || m[2].length > 253 || Number(m[3]) < 1 || Number(m[3]) > 65535) return { proto: 'ssl://', host: '', port: '' };
+  return { proto: m[1] + '://', host: m[2], port: m[3] };
 }
 
 function validateHost(proto, host, port) {
@@ -97,14 +101,14 @@ function addMapping(values) {
     <h4>Mapping ${id} <button class="btn danger" type="button" data-remove="${id}" aria-label="Remove mapping" style="padding:.2rem .6rem;font-size:.8rem;"><i class="bi bi-trash"></i> Remove</button></h4>
     <div class="field">
       <label>Domains (one per line)</label>
-      <textarea data-field="domains" rows="3" placeholder="example.com&#10;example.net">${Array.isArray(values.domains) ? values.domains.join('\n') : (values.domains || '')}</textarea>
+      <textarea data-field="domains" rows="3" placeholder="example.com&#10;example.net">${htmlEsc(Array.isArray(values.domains) ? values.domains.join('\n') : (values.domains || ''))}</textarea>
       <div class="err" data-err="domains"></div>
     </div>
     <div class="field">
       <label>IMAP host</label>
       <div class="host-row">
         <select data-field="imapProto"><option value="ssl://" ${sh.proto==='ssl://'?'selected':''}>ssl://</option><option value="tls://" ${sh.proto==='tls://'?'selected':''}>tls://</option></select>
-        <input type="text" data-field="imapHost" placeholder="imap.example.org" value="${sh.host}">
+        <input type="text" data-field="imapHost" placeholder="imap.example.org" value="${htmlEsc(sh.host)}">
         <input type="number" data-field="imapPort" placeholder="993" min="1" max="65535" value="${sh.port}">
       </div>
       <div class="err" data-err="imap"></div>
@@ -113,7 +117,7 @@ function addMapping(values) {
       <label>SMTP host</label>
       <div class="host-row">
         <select data-field="smtpProto"><option value="ssl://" ${ss.proto==='ssl://'?'selected':''}>ssl://</option><option value="tls://" ${ss.proto==='tls://'?'selected':''}>tls://</option></select>
-        <input type="text" data-field="smtpHost" placeholder="smtp.example.org" value="${ss.host}">
+        <input type="text" data-field="smtpHost" placeholder="smtp.example.org" value="${htmlEsc(ss.host)}">
         <input type="number" data-field="smtpPort" placeholder="587" min="1" max="65535" value="${ss.port}">
       </div>
       <div class="err" data-err="smtp"></div>
@@ -122,7 +126,7 @@ function addMapping(values) {
       <label>ManageSieve host (optional)</label>
       <div class="host-row">
         <select data-field="sieveProto"><option value="ssl://" ${sv.proto==='ssl://'?'selected':''}>ssl://</option><option value="tls://" ${sv.proto==='tls://'?'selected':''}>tls://</option></select>
-        <input type="text" data-field="sieveHost" placeholder="sieve.example.org" value="${sv.host}">
+        <input type="text" data-field="sieveHost" placeholder="sieve.example.org" value="${htmlEsc(sv.host)}">
         <input type="number" data-field="sievePort" placeholder="4190" min="1" max="65535" value="${sv.port}">
       </div>
       <div class="err" data-err="sieve"></div>
@@ -216,76 +220,144 @@ function generate() {
 
 /* ---------- Parse pasted config (PHP or JSON) ---------- */
 
-function splitHost(v) {
-  v = (v || '').trim();
-  const m = v.match(/^(ssl|tls):\/\/([^:]+):(\d+)$/);
-  if (m) return { proto: m[1] + '://', host: m[2], port: m[3] };
-  return { proto: 'ssl://', host: v, port: '' };
+function tokenizePhp(text) {
+  const tokens = [];
+  for (let i = 0; i < text.length;) {
+    const c = text[i];
+    if (/\s/.test(c)) { i++; continue; }
+    if (text.startsWith('<?php', i)) { i += 5; continue; }
+    if (text.startsWith('?>', i)) { i += 2; continue; }
+    if (text.startsWith('=>', i)) { tokens.push({ type: 'symbol', value: '=>' }); i += 2; continue; }
+    if (text.startsWith('//', i) || c === '#') {
+      while (i < text.length && text[i] !== '\n') i++;
+      continue;
+    }
+    if (text.startsWith('/*', i)) {
+      const end = text.indexOf('*/', i + 2);
+      if (end < 0) throw new Error('Unclosed PHP comment');
+      i = end + 2;
+      continue;
+    }
+    if (c === "'" || c === '"') {
+      const quote = c;
+      let value = '';
+      i++;
+      let closed = false;
+      while (i < text.length) {
+        if (text[i] === quote) { i++; closed = true; break; }
+        if (text[i] === '\\' && i + 1 < text.length) {
+          const next = text[i + 1];
+          if (quote === "'" && next !== "'" && next !== '\\') value += '\\';
+          value += next;
+          i += 2;
+        } else value += text[i++];
+      }
+      if (!closed) throw new Error('Unclosed PHP string');
+      tokens.push({ type: 'string', value });
+      continue;
+    }
+    if (/[0-9]/.test(c)) {
+      let end = i + 1;
+      while (end < text.length && /[0-9]/.test(text[end])) end++;
+      tokens.push({ type: 'number', value: Number(text.slice(i, end)) });
+      i = end;
+      continue;
+    }
+    if (/[a-zA-Z_$]/.test(c)) {
+      let end = i + 1;
+      while (end < text.length && /[a-zA-Z0-9_$]/.test(text[end])) end++;
+      tokens.push({ type: 'identifier', value: text.slice(i, end) });
+      i = end;
+      continue;
+    }
+    tokens.push({ type: 'symbol', value: c });
+    i++;
+  }
+  return tokens;
+}
+
+function parsePhpArray(tokens, state) {
+  if (tokens[state.i]?.value !== '[') throw new Error('Expected PHP array');
+  state.i++;
+  const entries = [];
+  while (state.i < tokens.length && tokens[state.i].value !== ']') {
+    const first = parsePhpValue(tokens, state);
+    if (tokens[state.i]?.value === '=>') {
+      state.i++;
+      entries.push([first, parsePhpValue(tokens, state)]);
+    } else entries.push([null, first]);
+    if (tokens[state.i]?.value === ',') state.i++;
+    else if (tokens[state.i]?.value !== ']') throw new Error('Expected comma in PHP array');
+  }
+  if (tokens[state.i]?.value !== ']') throw new Error('Unclosed PHP array');
+  state.i++;
+  if (entries.every(([key]) => key === null)) return entries.map(([, value]) => value);
+  const out = Object.create(null);
+  entries.forEach(([key, value], index) => { out[key === null ? String(index) : String(key)] = value; });
+  return out;
+}
+
+function parsePhpValue(tokens, state) {
+  const token = tokens[state.i++];
+  if (!token) throw new Error('Expected PHP value');
+  if (token.value === '[') { state.i--; return parsePhpArray(tokens, state); }
+  if (token.type === 'string' || token.type === 'number') return token.value;
+  throw new Error('Unsupported PHP value');
+}
+
+function readPhpConfig(text) {
+  const tokens = tokenizePhp(text);
+  for (let i = 0; i < tokens.length - 5; i++) {
+    if (tokens[i].value === '$config' && tokens[i + 1].value === '[' &&
+        tokens[i + 2].type === 'string' && tokens[i + 2].value === 'email_domains_mapper' &&
+        tokens[i + 3].value === ']' && tokens[i + 4].value === '=') {
+      const state = { i: i + 5 };
+      return parsePhpValue(tokens, state);
+    }
+  }
+  return null;
+}
+
+function normalizeMapping(m) {
+  if (!m || typeof m !== 'object' || Array.isArray(m)) return null;
+  if (!Array.isArray(m.domains) || m.domains.some(d => typeof d !== 'string')) return null;
+  const domains = m.domains;
+  const normalizedDomains = domains.map(d => d.trim()).filter(Boolean);
+  const domainText = normalizedDomains.join('\n');
+  const ih = splitHost(m.imap);
+  const sh = splitHost(m.smtp);
+  if (validateDomains(domainText) || !ih.host || !sh.host) return null;
+  const vh = splitHost(m.managesieve_host);
+  return {
+    domains: domainText,
+    imap: ih.host ? m.imap : '', smtp: sh.host ? m.smtp : '',
+    sieve: vh.host ? m.managesieve_host : ''
+  };
 }
 
 function parseConfig(text) {
   text = text.trim();
-  // Try JSON first (handy if someone exports their config as JSON)
+  let cfg;
   if (text.startsWith('{') || text.startsWith('[')) {
-    try {
-      const j = JSON.parse(text);
-      const cfg = Array.isArray(j) ? { mappings: j } : j;
-      const maps = (cfg.mappings || []).map(m => {
-        const ih = splitHost(m.imap || m.imap_host || '');
-        const sh = splitHost(m.smtp || m.smtp_host || '');
-        const vh = splitHost(m.managesieve_host || m.managesieve || '');
-        return {
-          domains: Array.isArray(m.domains) ? m.domains.join('\n') : String(m.domains || '').split(/[\n,]/).map(d=>d.trim()).filter(Boolean).join('\n'),
-          imapProto: ih.proto, imapHost: ih.host, imapPort: ih.port,
-          smtpProto: sh.proto, smtpHost: sh.host, smtpPort: sh.port,
-          sieveProto: vh.proto, sieveHost: vh.host, sievePort: vh.port
-        };
-      }).filter(m => m.domains || m.imapHost || m.smtpHost);
-      return { logLevel: cfg.log_level != null ? cfg.log_level : null, maps };
-    } catch (e) { /* fall through to PHP parser */ }
+    try { cfg = JSON.parse(text); } catch (e) { cfg = null; }
   }
-
-  // Lightweight PHP-ish parser: good enough for the generated format.
-  const llMatch = text.match(/['"]log_level['"]\s*=>\s*(\d+)/);
-  const logLevel = llMatch ? parseInt(llMatch[1], 10) : null;
-  const idx = text.indexOf('mappings');
-  if (idx === -1) return { logLevel, maps: [] };
-  const bracketStart = text.indexOf('[', idx);
-  if (bracketStart === -1) return { logLevel, maps: [] };
-
-  // Find the matching closing bracket of the mappings array.
-  let depth = 0, end = -1;
-  for (let i = bracketStart; i < text.length; i++) {
-    const c = text[i];
-    if (c === '[') depth++;
-    else if (c === ']') { depth--; if (depth === 0) { end = i; break; } }
+  if (!cfg) {
+    try { cfg = readPhpConfig(text); } catch (e) { return { logLevel: null, maps: [], skipped: 0 }; }
   }
-  if (end === -1) return { logLevel, maps: [] };
-
-  const inner = text.slice(bracketStart + 1, end);
-  const blocks = [];
-  let d = 0, start = -1;
-  for (let i = 0; i < inner.length; i++) {
-    const c = inner[i];
-    if (c === '[') { if (d === 0) start = i; d++; }
-    else if (c === ']') { d--; if (d === 0 && start !== -1) { blocks.push(inner.slice(start, i + 1)); start = -1; } }
-  }
-
+  if (!cfg) return { logLevel: null, maps: [], skipped: 0 };
+  if (cfg.email_domains_mapper && typeof cfg.email_domains_mapper === 'object') cfg = cfg.email_domains_mapper;
+  const rawMaps = Array.isArray(cfg) ? cfg : (Array.isArray(cfg.mappings) ? cfg.mappings :
+    (cfg.mappings && typeof cfg.mappings === 'object' ? Object.values(cfg.mappings) : []));
   const maps = [];
-  for (const b of blocks) {
-    const domM = b.match(/['"]domains['"]\s*=>\s*\[([^\]]*)\]/);
-    const imapM = b.match(/['"]imap['"]\s*=>\s*'([^']*)'/);
-    const smtpM = b.match(/['"]smtp['"]\s*=>\s*'([^']*)'/);
-    const sieveM = b.match(/['"]managesieve_host['"]\s*=>\s*'([^']*)'/);
-    const domains = domM ? (domM[1].match(/'([^']*)'/g) || []).map(x => x.slice(1, -1)).filter(Boolean) : [];
-    const ih = splitHost(imapM ? imapM[1] : '');
-    const sh = splitHost(smtpM ? smtpM[1] : '');
-    const vh = splitHost(sieveM ? sieveM[1] : '');
-    maps.push({ domains: domains.join('\n'), imapProto: ih.proto, imapHost: ih.host, imapPort: ih.port,
-                smtpProto: sh.proto, smtpHost: sh.host, smtpPort: sh.port,
-                sieveProto: vh.proto, sieveHost: vh.host, sievePort: vh.port });
-  }
-  return { logLevel, maps };
+  let skipped = 0;
+  rawMaps.forEach(m => {
+    const normalized = normalizeMapping(m);
+    if (normalized) maps.push(normalized);
+    else skipped++;
+  });
+  const level = cfg.log_level;
+  const logLevel = Number.isInteger(level) && level >= 0 && level <= 4 ? level : null;
+  return { logLevel, maps, skipped };
 }
 
 
@@ -314,7 +386,7 @@ document.getElementById('loadPasted').addEventListener('click', () => {
   parsed.maps.forEach(m => addMapping(m));
   if (parsed.maps.length === 0) addMapping();
   refreshRemoveButtons();
-  status.textContent = `Loaded ${parsed.maps.length} mapping(s).`;
+  status.textContent = `Loaded ${parsed.maps.length} mapping(s).${parsed.skipped ? ` Skipped ${parsed.skipped} invalid entr${parsed.skipped === 1 ? 'y' : 'ies'}.` : ''}`;
   status.className = 'note ok';
 });
 
