@@ -64,7 +64,7 @@ declare(strict_types=1);
 class email_domains_mapper extends rcube_plugin
 {
     /** Plugin version (single source of truth; also asserted by tests and release checks). */
-    public const VERSION = '1.0.0';
+    public const VERSION = '1.0.1';
 
     /**
      * Plugin metadata shown by the Roundcube plugin manager / installer.

@@ -6,9 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-11-05
+
+### Fixed
+
+- Fixed Composer autoloading by removing the unnecessary classmap configuration for the Roundcube plugin entry point.
+- Raised the minimum PHP requirement to 8.5 and updated CI, static analysis, coding standards, and release checks accordingly.
+
 ## [1.0.0] - 2026-10-29
 
 ### Added
+
 - Domain-based selection of IMAP, SMTP and optional ManageSieve hosts from an explicit, case-insensitive domain allowlist.
 - Automatic IDN (Unicode/punycode) normalization for configured and login domains.
 - Fail-closed authentication: unknown, malformed or duplicate domains and servers are rejected before any connection is made.
