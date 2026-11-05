@@ -47,11 +47,6 @@
     "roundcube/roundcubemail": "^1.7",
     "symfony/yaml": "^6.4 || ^7.0"
   },
-  "autoload": {
-    "classmap": [
-      "email_domains_mapper.php"
-    ]
-  },
   "scripts": {
     "test": "phpunit",
     "cs": "php-cs-fixer fix --dry-run --diff --using-cache=no",
