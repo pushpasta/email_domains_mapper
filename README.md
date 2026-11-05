@@ -15,7 +15,7 @@ Users sign in with their full email address, such as `user@example.com`. The plu
 ## Requirements
 
 - **Roundcube 1.7 or newer**
-- **PHP 8.1 or newer**
+- **PHP 8.5 or newer**
 - The **`intl`** and **`mbstring`** PHP extensions, which are also standard Roundcube requirements
 - Mail server URLs using **`tls://` or `ssl://`** — plaintext hosts are not accepted
 

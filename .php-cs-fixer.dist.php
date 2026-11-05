@@ -13,7 +13,7 @@ return (new Config())
     ->setRiskyAllowed(true)
     ->setRules([
         '@PSR12' => true,
-        '@PHP8x1Migration' => true,
+        '@PHP8x5Migration' => true,
         'array_syntax' => ['syntax' => 'short'],
         'concat_space' => ['spacing' => 'one'],
         'declare_strict_types' => true,
