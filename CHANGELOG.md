@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed Composer autoloading by removing the unnecessary classmap configuration for the Roundcube plugin entry point.
 - Raised the minimum PHP requirement to 8.5 and updated CI, static analysis, coding standards, and release checks accordingly.
+- Fixed plugin class loading in the PHPUnit test bootstrap.
 
 ## [1.0.0] - 2026-10-29
 
