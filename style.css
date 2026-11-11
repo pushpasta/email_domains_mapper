@@ -35,6 +35,9 @@
   --err: #dc2626;       /* error */
   --accent-fg: #ffffff; /* text on accent-colored buttons */
   --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+
+  /* Inline SVG arrow shown after links that open in a new tab (see base links). */
+  --ext-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z'/%3E%3Cpath d='M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z'/%3E%3C/svg%3E");
 }
 
 /*
@@ -91,6 +94,22 @@ body {
 /* Links use the accent color; only underline them on hover. */
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
+
+/*
+ * Links that open in a new tab get a small arrow after the text so the
+ * behavior is clear before clicking. The arrow is the inline SVG above used
+ * as a mask with currentColor, so it always matches the link color in every
+ * theme. Image-only links (the badges) opt out just below.
+ */
+a[target="_blank"]::after {
+  content: ""; display: inline-block; width: .7em; height: .7em; margin-left: .3em;
+  vertical-align: -0.05em; background-color: currentColor;
+  -webkit-mask: var(--ext-icon) center / contain no-repeat;
+  mask: var(--ext-icon) center / contain no-repeat;
+}
+
+/* Badge links show only their image, so drop the new-tab arrow there. */
+.badges a[target="_blank"]::after { content: none; }
 
 /* ---------- Layout ---------- */
 
