@@ -146,6 +146,17 @@ function refreshRemoveButtons() {
   });
 }
 
+function hasMappingEntries() {
+  return [...mappingsEl.querySelectorAll('.mapping')].some(mapping =>
+    ['domains', 'imapHost', 'imapPort', 'smtpHost', 'smtpPort', 'sieveHost', 'sievePort']
+      .some(field => mapping.querySelector(`[data-field="${field}"]`).value.trim())
+  );
+}
+
+function hasUnsavedChanges() {
+  return hasMappingEntries() || pasteEl.value.trim() !== '' || document.getElementById('loglevel').value !== '2';
+}
+
 function collect() {
   const maps = [];
   let warning = '';
@@ -380,10 +391,7 @@ document.getElementById('loadPasted').addEventListener('click', () => {
     status.className = 'note warn';
     return;
   }
-  const hasCurrentEntries = [...mappingsEl.querySelectorAll('.mapping')].some(mapping =>
-    ['domains', 'imapHost', 'imapPort', 'smtpHost', 'smtpPort', 'sieveHost', 'sievePort']
-      .some(field => mapping.querySelector(`[data-field="${field}"]`).value.trim())
-  );
+  const hasCurrentEntries = hasMappingEntries();
   if (hasCurrentEntries && !window.confirm('Loading this config will replace the mapping values currently in the form. Continue?')) return;
   if (parsed.logLevel != null) document.getElementById('loglevel').value = parsed.logLevel;
   mappingsEl.innerHTML = '';
@@ -400,6 +408,7 @@ document.getElementById('addMapping').addEventListener('click', () => addMapping
 document.getElementById('generate').addEventListener('click', generate);
 
 document.getElementById('reset').addEventListener('click', () => {
+  if (hasUnsavedChanges() && !window.confirm('Starting over will discard all changes you made in the form. Continue?')) return;
   mappingsEl.innerHTML = '';
   mappingCount = 0;
   addMapping();
