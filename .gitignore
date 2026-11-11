@@ -1,5 +1,4 @@
 .tmp/
-AGENTS.md
 
 # local / secret config
 config.inc.php
